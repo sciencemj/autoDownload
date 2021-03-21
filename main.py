@@ -1,13 +1,14 @@
 import os
 import shutil
-
+import time
+import threading
 import requests
 import tkinter
 import tkinter.font
 import tkinter.filedialog
 from zipfile import ZipFile
-
 if __name__ == '__main__':
+    # isRepeat = [False]
     tk = tkinter.Tk()
 
     tk.title("SGD")
@@ -18,15 +19,36 @@ if __name__ == '__main__':
     font = tkinter.font.Font(size=32)
     labal = tkinter.Label(tk, text="SPIGOT_DOWNLOAD", width=20, height=5, fg="red", bg="black", font=font)
     labal.pack()
-    #version = tkinter.Entry(tk)
-    #version.pack()
+
+    isrepeat = tkinter.Label(tk, text="REPEAT = FALSE", fg="red", bg="black")
+    isrepeat.pack()
+    
+    def turnOn():
+        isRepeat = False
+
+        def turnOn_():
+            nonlocal isRepeat
+            if isRepeat:
+                isRepeat = False
+                isrepeat.config(text="REPEAT = FALSE")
+            else:
+                isRepeat = True
+                isrepeat.config(text="REPEAT = TRUE")
+                repeatDown()
+        return turnOn_
+    
+            
+    version = tkinter.Entry(tk)
+    version.pack()
 
     def selPath():
         path = tkinter.filedialog.askdirectory()
         print(path)
-        return path
+        version.insert(0, path)
 
-    #def downSpigot():
+    selectPath = tkinter.Button(tk, text="PATH_SEL", command=selPath)
+    selectPath.pack()
+    # def downSpigot():
     #    url = 'https://cdn.getbukkit.org/spigot/spigot-' + version.get() + '.jar'
     #    print(url)
     #    r = requests.get(url, allow_redirects=True)
@@ -36,7 +58,7 @@ if __name__ == '__main__':
         url = 'https://github.com/sciencemj/autoDownload_test/archive/refs/heads/main.zip'
         print(url)
         r = requests.get(url, allow_redirects=True)
-        path = selPath()
+        path = version.get()
         file = path + '/main.zip'
         open(file, 'wb').write(r.content)
         zf = ZipFile(file, 'r')
@@ -58,7 +80,23 @@ if __name__ == '__main__':
         zf.close()
         os.remove(file)
 
+
     button = tkinter.Button(tk, text="DOWNLOAD", command=downGit)
     button.pack()
+
+
+
+
+
+    def repeatDown():
+        downGit()
+        threading.Timer(5, repeatDown).start()
+
+
+    t = turnOn()
+    toggle = tkinter.Button(tk, text="TOGGLE AUTO_DOWNLOAD", command=t)
+    toggle.pack()
+    #start = tkinter.Button(tk, text="START", command=repeatDown)
+    #start.pack()
 
     tk.mainloop()
